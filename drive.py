@@ -11,6 +11,7 @@ import eventlet.wsgi
 from PIL import Image
 from flask import Flask
 from io import BytesIO
+from import_data import SIZE, CROP
 
 from keras.models import load_model
 import h5py
@@ -44,7 +45,7 @@ class SimplePIController:
 
 
 controller = SimplePIController(0.1, 0.002)
-set_speed = 15.
+set_speed = 10.
 controller.set_desired(set_speed)
 
 
@@ -56,6 +57,7 @@ def crop_resize_equalize(image, crop_pixels, new_size):
     '''
     height = image.shape[0]
     image = image[crop_pixels[0] : height - crop_pixels[1], :]
+    print(image.shape)
     image = cv2.resize(image, new_size)
     # Convert to YUV, equalize histograms and reconvert back to RGB
     image_yuv = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
@@ -78,7 +80,7 @@ def telemetry(sid, data):
         image = Image.open(BytesIO(base64.b64decode(imgString)))
         image_array = np.asarray(image)
         # Apply pre-processing steps
-        image_array = crop_resize_equalize(image_array, (30, 20), (64, 64))
+        image_array = crop_resize_equalize(image_array, CROP, SIZE)
         # Predict steering angle using trained model
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
 

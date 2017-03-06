@@ -74,8 +74,8 @@ def random_translate(image, angle, x_pixels, y_pixels, angle_corr):
 
     return image_out, angle_out
 
-CROP = (30, 20)
-SIZE = (64, 64)
+CROP = (60, 20)
+SIZE = (100, 100)
 
 def crop_resize(image, crop_pixels, new_size):
     '''
@@ -120,7 +120,7 @@ def append_images_and_angles_train(batch_sample, images, angles,
 
     angle = float(batch_sample[3]) + corr_sign * angle_corr
 
-    image_trans, angle_trans = random_translate(image, angle, 30, 30, angle_corr)
+    image_trans, angle_trans = random_translate(image, angle, 30., 0., angle_corr)
     image_trans = crop_resize(image_trans, CROP, SIZE)
 
     # Histogram equalization (also required in the drive.py file)
@@ -164,7 +164,7 @@ def append_images_and_angles_valid(batch_sample, images, angles,
 
     angle = float(batch_sample[3])
 
-    image_cropped = crop_resize(image, (30, 20), (64, 64))
+    image_cropped = crop_resize(image, CROP, SIZE)
 
     # Histogram equalization (also required in the drive.py file)
     if channels == 1:
@@ -200,6 +200,7 @@ def train_generator(samples, log_path, batch_size = 32, angle_corr = 0.25,
 
             X_train = np.array(images)
             y_train = np.array(angles)
+            #print(X_train.shape)
             yield shuffle(X_train, y_train)
  
 def valid_generator(samples, log_path, batch_size = 32, channels = 3):
@@ -219,4 +220,5 @@ def valid_generator(samples, log_path, batch_size = 32, channels = 3):
 
             X_train = np.array(images)
             y_train = np.array(angles)
+            #print(X_train.shape)
             yield shuffle(X_train, y_train)

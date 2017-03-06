@@ -3,7 +3,7 @@ import base64
 from datetime import datetime
 import os
 import shutil
-
+import cv2
 import numpy as np
 import socketio
 import eventlet
@@ -44,8 +44,24 @@ class SimplePIController:
 
 
 controller = SimplePIController(0.1, 0.002)
-set_speed = 9
+set_speed = 15.
 controller.set_desired(set_speed)
+
+
+def crop_resize_equalize(image, crop_pixels, new_size):
+    '''
+    Crops crop_pixels[0] from top of the image, crop_pixels[1] from bottom,
+    then resizes to shape new_size. Then applies histogram equalization.
+    Returns the cropped, resized and equalized image.
+    '''
+    height = image.shape[0]
+    image = image[crop_pixels[0] : height - crop_pixels[1], :]
+    image = cv2.resize(image, new_size)
+    # Convert to YUV, equalize histograms and reconvert back to RGB
+    image_yuv = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
+    image_yuv[:, :, 0] = cv2.equalizeHist(image_yuv[:, :, 0])
+    image_out = cv2.cvtColor(image_yuv, cv2.COLOR_YCrCb2RGB)
+    return image_out
 
 
 @sio.on('telemetry')
@@ -61,6 +77,9 @@ def telemetry(sid, data):
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
         image_array = np.asarray(image)
+        # Apply pre-processing steps
+        image_array = crop_resize_equalize(image_array, (30, 20), (64, 64))
+        # Predict steering angle using trained model
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
 
         throttle = controller.update(float(speed))
@@ -92,6 +111,7 @@ def send_control(steering_angle, throttle):
             'throttle': throttle.__str__()
         },
         skip_sid=True)
+
 
 
 if __name__ == '__main__':

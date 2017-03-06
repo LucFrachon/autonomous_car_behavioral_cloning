@@ -20,7 +20,7 @@ def main():
     video_file = args.image_folder + '.mp4'
     print("Creating video {}, FPS={}".format(video_file, args.fps))
     clip = ImageSequenceClip(args.image_folder, fps=args.fps)
-    clip.write_videofile(video_file)
+    clip.write_videofile(video_file, codec='libx264')
 
 
 if __name__ == '__main__':

@@ -50,13 +50,29 @@ def import_data(ex_from = None, ex_to = None, log_dir = '/home/lucfrachon/udacit
     return x_out, y_out
 
 
-def random_adjust_brightness(image, min_factor = .4):
+def random_adjust_brightness(image, factor = .3):
     '''
     Randomly lower brightness of a single image
     '''
-    image_hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-    image_hsv[:, :, 2] = random.uniform(min_factor, 1.) * image_hsv[:, :, 2]
-    image_out = cv2.cvtColor(image_hsv, cv2.COLOR_HSV2RGB)
+    image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    
+    # Random adjustment requires converting array to float:
+    image_hsv = image_hsv.astype(np.float32)
+
+    random_factor = random.uniform((-1) * factor, factor)
+
+    # Create array of maximum possible pixel values:
+    max_values = np.empty_like(image_hsv[:, :, 2])
+    max_values.fill(255.)
+
+    # Cap pixel values to 255 to avoid artefacts:
+    image_hsv[:, :, 2] = np.minimum(image_hsv[:, :, 2] * (1. + random_factor), 
+        max_values)
+
+    # Convert back to unsigned integer before passing to cv2 function:
+    image_hsv = np.round(image_hsv).astype(np.uint8)
+    image_out = cv2.cvtColor(image_hsv, cv2.COLOR_HSV2BGR)
+
     return image_out
 
 
@@ -66,11 +82,14 @@ def random_translate(image, angle, x_pixels, y_pixels, angle_corr):
     When translating along x, also corrects steering angle by a constant factor 
     (an approximation of the actual correction function)
     '''
-    x_t = np.random.uniform(-x_pixels, x_pixels) 
-    angle_out = x_t * angle_corr / image.shape[1]
+    x_t = int(np.round(np.random.uniform(-x_pixels, x_pixels)))
+
+    angle_out = angle + x_t * 2 * angle_corr / image.shape[1]
+
     y_t = np.random.uniform(-y_pixels, y_pixels)
     M = np.array([[1, 0, x_t], [0, 1, y_t]], dtype = np.float32)
-    image_out = cv2.warpAffine(image, M, dsize = image.shape[:2])
+    image_out = cv2.warpAffine(image, M, 
+        dsize = (image.shape[1], image.shape[0]))
 
     return image_out, angle_out
 
@@ -106,37 +125,43 @@ def append_images_and_angles_train(batch_sample, images, angles,
         corr_sign = 0.
     elif camera == 1:
        corr_sign = 1.
-    else:
+    elif  camera == 2:
         corr_sign = -1.
+    else:
+        raise ValueError("Wrong camera value - can only be 0, 1 or 2")
 
     flip_yes_no = random.randint(0, 1)  # Randomly decide to flip image or not
+    # flip_yes_no = 1
 
     name = log_path + 'IMG/' + batch_sample[camera].split('/')[-1]
 
-    if channels == 3:
-        image = img.imread(name)
+    if channels > 1:  # Load as greyscale if channel == 1, BGR otherwise
+        image = cv2.imread(name, 1)
     else:
-        image = img.imread(name, 0)
+        image = cv2.imread(name, 0)
+    
+    angle = float(batch_sample[3])
+    angle_trans = angle + corr_sign * angle_corr
+    
 
-    angle = float(batch_sample[3]) + corr_sign * angle_corr
-
-    image_trans, angle_trans = random_translate(image, angle, 30., 0., angle_corr)
+    image_trans, angle_trans = random_translate(image, angle_trans, 30., 0., angle_corr)
     image_trans = crop_resize(image_trans, CROP, SIZE)
 
     # Histogram equalization (also required in the drive.py file)
     if channels == 1:
         image_trans = cv2.equalizeHist(image_trans)
     else: # if BGR, convert to YUV, equalize histogram and convert back to BGR
-        image_yuv = cv2.cvtColor(image_trans, cv2.COLOR_RGB2YCrCb)
+        image_yuv = cv2.cvtColor(image_trans, cv2.COLOR_BGR2YCrCb)
         image_yuv[:, :, 0] = cv2.equalizeHist(image_yuv[:, :, 0])
-        image_trans = cv2.cvtColor(image_yuv, cv2.COLOR_YCrCb2RGB)
+        image_trans = cv2.cvtColor(image_yuv, cv2.COLOR_YCrCb2BGR)
 
     if flip_yes_no == 0:
-        images.append(random_adjust_brightness(image_trans, .4))
+        images.append(random_adjust_brightness(image_trans, .3))
         angles.append(angle_trans)
     else:
-        images.append(cv2.flip(random_adjust_brightness(image_trans, .4), flipCode = 1))
+        images.append(cv2.flip(random_adjust_brightness(image_trans, .3), flipCode = 1))
         angles.append(angle_trans * (-1))
+    
 
     return images, angles
 
@@ -157,10 +182,10 @@ def append_images_and_angles_valid(batch_sample, images, angles,
     
     name = log_path + 'IMG/' + batch_sample[0].split('/')[-1]
 
-    if channels == 3:
-        image = img.imread(name)
+    if channels > 1:  # Load as greyscale if channel == 1, BGR otherwise
+        image = cv2.imread(name, 1)
     else:
-        image = img.imread(name, 0)
+        image = cv2.imread(name, 0)
 
     angle = float(batch_sample[3])
 
@@ -170,9 +195,9 @@ def append_images_and_angles_valid(batch_sample, images, angles,
     if channels == 1:
         image_cropped = cv2.equalizeHist(image_cropped)
     else: # if BGR, convert to YUV, equalize histogram and convert back to BGR
-        image_yuv = cv2.cvtColor(image_cropped, cv2.COLOR_RGB2YCrCb)
+        image_yuv = cv2.cvtColor(image_cropped, cv2.COLOR_BGR2YCrCb)
         image_yuv[:, :, 0] = cv2.equalizeHist(image_yuv[:, :, 0])
-        image_cropped = cv2.cvtColor(image_yuv, cv2.COLOR_YCrCb2RGB)
+        image_cropped = cv2.cvtColor(image_yuv, cv2.COLOR_YCrCb2BGR)
 
     images.append(image_cropped)
     angles.append(angle)
@@ -193,14 +218,14 @@ def train_generator(samples, log_path, batch_size = 32, angle_corr = 0.25,
             angles = []
 
             for batch_sample in batch_samples:
-                camera = np.random.randint(0,2) # Pick a random camera
+                camera = np.random.randint(0, 3) # Pick a random camera (0, 1 or 2)
                 images, angles = append_images_and_angles_train(batch_sample,
                     images, angles, log_path, angle_corr, camera = camera,
                     channels = channels)
 
             X_train = np.array(images)
             y_train = np.array(angles)
-            #print(X_train.shape)
+
             yield shuffle(X_train, y_train)
  
 def valid_generator(samples, log_path, batch_size = 32, channels = 3):
@@ -220,5 +245,5 @@ def valid_generator(samples, log_path, batch_size = 32, channels = 3):
 
             X_train = np.array(images)
             y_train = np.array(angles)
-            #print(X_train.shape)
+
             yield shuffle(X_train, y_train)

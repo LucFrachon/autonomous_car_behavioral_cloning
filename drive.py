@@ -45,7 +45,7 @@ class SimplePIController:
 
 
 controller = SimplePIController(0.1, 0.002)
-set_speed = 10.
+set_speed = 20.
 controller.set_desired(set_speed)
 
 
@@ -56,11 +56,10 @@ def crop_resize_equalize(image, crop_pixels, new_size):
     Returns the cropped, resized and equalized image.
     '''
     height = image.shape[0]
-    image = image[crop_pixels[0] : height - crop_pixels[1], :]
-    print(image.shape)
-    image = cv2.resize(image, new_size)
+    image_out = image[crop_pixels[0] : height - crop_pixels[1], :]
+    image_out = cv2.resize(image_out, new_size)
     # Convert to YUV, equalize histograms and reconvert back to RGB
-    image_yuv = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
+    image_yuv = cv2.cvtColor(image_out, cv2.COLOR_RGB2YCrCb)
     image_yuv[:, :, 0] = cv2.equalizeHist(image_yuv[:, :, 0])
     image_out = cv2.cvtColor(image_yuv, cv2.COLOR_YCrCb2RGB)
     return image_out

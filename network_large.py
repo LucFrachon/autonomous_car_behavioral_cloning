@@ -20,8 +20,8 @@ import csv
 batch_size = 128
 learning_rate = 0.0001
 valid_split = .2
-nb_epoch = 15
-angle_corr = .18
+nb_epoch = 10
+angle_corr = .2
 ch = 3
 keep_prob = .3
 
@@ -34,8 +34,8 @@ if options.local == True:
     log_dir = '/home/lucfrachon/udacity_sim/data/'
     im_dir = '/home/lucfrachon/udacity_sim/data/IMG/'
 else:
-    log_dir = "/home/data/data/"
-    im_dir = "/home/data/data/IMG/"
+    log_dir = "/mnt/data/"
+    im_dir = "/mnt/data/IMG/"
 
 
 # Build generator:
@@ -115,10 +115,10 @@ adam = Adam(lr = learning_rate)
 model.compile(loss = 'mse', optimizer = adam, metrics = ['accuracy'])
 #samples_per_epoch = len(train_samples)
 #nb_val_samples = len(validation_samples)
-#model.summary()
+model.summary()
 history = model.fit_generator(train_gen, samples_per_epoch = len(train_samples), 
 	validation_data = valid_gen, nb_val_samples = len(validation_samples), 
 	 nb_epoch = nb_epoch, verbose = 1)
 
-model.save('model_test_small.h5')
+model.save('model_50000.h5')
 gc.collect()

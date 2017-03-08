@@ -84,7 +84,7 @@ def random_translate(image, angle, x_pixels, y_pixels, angle_corr):
     '''
     x_t = int(np.round(np.random.uniform(-x_pixels, x_pixels)))
 
-    angle_out = angle + x_t * 2 * angle_corr / image.shape[1]
+    angle_out = angle + x_t * 5 * angle_corr / image.shape[1]
 
     y_t = np.random.uniform(-y_pixels, y_pixels)
     M = np.array([[1, 0, x_t], [0, 1, y_t]], dtype = np.float32)
@@ -93,8 +93,8 @@ def random_translate(image, angle, x_pixels, y_pixels, angle_corr):
 
     return image_out, angle_out
 
-CROP = (60, 20)
-SIZE = (100, 100)
+CROP = (55, 25)
+SIZE = (80, 40)
 
 def crop_resize(image, crop_pixels, new_size):
     '''
@@ -130,7 +130,7 @@ def append_images_and_angles_train(batch_sample, images, angles,
     else:
         raise ValueError("Wrong camera value - can only be 0, 1 or 2")
 
-    flip_yes_no = random.randint(0, 1)  # Randomly decide to flip image or not
+    # flip_yes_no = random.randint(0, 1)  # Randomly decide to flip image or not
     # flip_yes_no = 1
 
     name = log_path + 'IMG/' + batch_sample[camera].split('/')[-1]
@@ -144,25 +144,26 @@ def append_images_and_angles_train(batch_sample, images, angles,
     angle_trans = angle + corr_sign * angle_corr
     
 
-    image_trans, angle_trans = random_translate(image, angle_trans, 30., 0., angle_corr)
+    image_trans, angle_trans = random_translate(image, angle_trans, 30., 30., 
+        angle_corr)
     image_trans = crop_resize(image_trans, CROP, SIZE)
+    image_trans = random_adjust_brightness(image_trans, .3)
 
     # Histogram equalization (also required in the drive.py file)
     if channels == 1:
         image_trans = cv2.equalizeHist(image_trans)
+
     else: # if BGR, convert to YUV, equalize histogram and convert back to BGR
         image_yuv = cv2.cvtColor(image_trans, cv2.COLOR_BGR2YCrCb)
         image_yuv[:, :, 0] = cv2.equalizeHist(image_yuv[:, :, 0])
         image_trans = cv2.cvtColor(image_yuv, cv2.COLOR_YCrCb2BGR)
 
-    if flip_yes_no == 0:
-        images.append(random_adjust_brightness(image_trans, .3))
-        angles.append(angle_trans)
-    else:
-        images.append(cv2.flip(random_adjust_brightness(image_trans, .3), flipCode = 1))
-        angles.append(angle_trans * (-1))
+    # if flip_yes_no == 0:
+    images.append(image_trans)
+    angles.append(angle_trans)
+    images.append(cv2.flip(image_trans, flipCode = 1))
+    angles.append(angle_trans * (-1))
     
-
     return images, angles
 
 

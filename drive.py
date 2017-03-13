@@ -12,15 +12,50 @@ from PIL import Image
 from flask import Flask
 from io import BytesIO
 from import_data import SIZE, CROP
-
 from keras.models import load_model
 import h5py
 from keras import __version__ as keras_version
+
+
 
 sio = socketio.Server()
 app = Flask(__name__)
 model = None
 prev_image_array = None
+
+parser = argparse.ArgumentParser(description='Remote Driving')
+parser.add_argument(
+    'model',
+    type=str,
+    help='Path to model h5 file. Model should be on the same path.'
+)
+parser.add_argument(
+    'image_folder',
+    type=str,
+    nargs='?',
+    default='',
+    help='Path to image folder. This is where the images from the run will be saved.'
+)
+parser.add_argument("-s", "--speed", 
+    dest = "TARGET_SPEED", 
+    type = float,
+    nargs='?',
+    default = 15.,
+    help = "Target speed of the car. Defaults to 15mph")
+parser.add_argument("-m", "--steering_multiplier", 
+    dest = "STEERING_MULT", 
+    type = float, 
+    nargs='?',
+    default = 1.25,
+    help = "Multiplier for steering inputs. Applied to the model's prediction at each frame. Defaults at 1.25.")
+parser.add_argument("-t", "--throttle_multiplier", 
+    dest = "THROTTLE_MULT", 
+    type = float,
+    nargs='?',
+    default = 0.5, 
+    help = "Multiplier for throttle inputs. Defaults to 0.5.")
+
+args = parser.parse_args()
 
 
 class SimplePIController:
@@ -45,8 +80,9 @@ class SimplePIController:
 
 
 controller = SimplePIController(0.1, 0.002)
-set_speed = 9.
-controller.set_desired(set_speed)
+
+# Set target speed
+controller.set_desired(args.TARGET_SPEED)
 
 
 def crop_resize_equalize(image, crop_pixels, new_size):
@@ -81,9 +117,10 @@ def telemetry(sid, data):
         # Apply pre-processing steps
         image_array = crop_resize_equalize(image_array, CROP, SIZE)
         # Predict steering angle using trained model
-        steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
+        steering_angle = args.STEERING_MULT * float(model.predict(image_array[None, :, :, :], 
+            batch_size=1))
 
-        throttle = controller.update(float(speed))
+        throttle = args.THROTTLE_MULT * controller.update(float(speed))
 
         print(steering_angle, throttle)
         send_control(steering_angle, throttle)
@@ -116,20 +153,7 @@ def send_control(steering_angle, throttle):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Remote Driving')
-    parser.add_argument(
-        'model',
-        type=str,
-        help='Path to model h5 file. Model should be on the same path.'
-    )
-    parser.add_argument(
-        'image_folder',
-        type=str,
-        nargs='?',
-        default='',
-        help='Path to image folder. This is where the images from the run will be saved.'
-    )
-    args = parser.parse_args()
+
 
     # check that model Keras version is same as local Keras version
     f = h5py.File(args.model, mode='r')

@@ -17,6 +17,8 @@ import gc
 import cv2
 import csv
 
+# Model meta-parameters
+
 batch_size = 128
 learning_rate = 0.0001
 valid_split = .2
@@ -55,9 +57,6 @@ train_gen = train_generator(train_samples, log_dir, batch_size = batch_size,
 valid_gen = valid_generator(validation_samples, log_dir, batch_size = batch_size,
 	channels = ch)
 
-
-# Note that teh actual batch size will be six times the specified value because 
-# of data augmentation during the generator construction.
 
 # Build model:
 model = Sequential()
@@ -109,12 +108,15 @@ model.add(Dense(1, W_regularizer = l2(0.001)))
 # Configure learning process and train model:
 adam = Adam(lr = learning_rate)
 model.compile(loss = 'mse', optimizer = adam, metrics = ['accuracy'])
-#samples_per_epoch = len(train_samples)
-#nb_val_samples = len(validation_samples)
+
+# Display model architecture
 model.summary()
+
+# Note that the actual batch size is twice the parameter because we use both the 
+# original and the flipped images at each epoch.
 history = model.fit_generator(train_gen, samples_per_epoch = 2 * len(train_samples), 
 	validation_data = valid_gen, nb_val_samples = 2 * len(validation_samples), 
 	 nb_epoch = nb_epoch, verbose = 1)
 
-model.save('model_.h5')
+model.save('model_final.h5')
 gc.collect()

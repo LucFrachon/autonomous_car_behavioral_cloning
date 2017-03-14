@@ -7,6 +7,57 @@ import matplotlib.image as img
 import sklearn
 from sklearn.utils import shuffle
 
+def import_data(ex_from = None, ex_to = None, log_dir = '/home/lucfrachon/udacity_sim/data/',
+        log_filename = 'driving_log.csv', images_dir = '/home/lucfrachon/udacity_sim/data/IMG/',
+        camera = 0, angle_corr = 0.28):
+    '''
+    Looks for the log file output from the training mode of the simulator and creates numpy 
+    arrays containing each image and its corresponding steering input, straight and reversed.
+    !!! Only for testing purposes. !!!
+
+
+    ex_from: If sampling from the images, starting point of the sample. None <--> 0
+    ex_to:  If sampling from the images, end point of the sample. None <--> last image
+
+    '''
+    lines = []
+    with open(log_dir + log_filename) as f:
+        reader = csv.reader(f)
+        for line in reader:
+            lines.append(line)
+
+    images = []
+    measurements = []
+
+    if camera == 0:
+        corr_sign = 0.
+    elif camera == 1:
+       corr_sign = 1.
+    elif  camera == 2:
+        corr_sign = -1.
+
+    if ex_from == None:
+        ex_from = 0
+    if ex_to == None:
+        ex_to = len(lines)
+
+    for line in lines[ex_from:ex_to]:
+        source_path = line[camera]
+        filename = source_path.split('/')[-1]
+        current_path = images_dir + filename
+        image = img.imread(current_path)
+        images.append(image)
+        images.append(cv2.flip(image, flipCode = 1))
+        # Adjust angle according to camera used:
+        measurement = float(line[3]) + corr_sign * angle_corr
+        measurements.append(measurement)
+        measurements.append(-measurement)
+
+    x_out = np.array(images)
+    y_out = np.array(measurements)
+
+    return x_out, y_out
+
 
 def random_adjust_brightness(image, factor = .3):
     '''

@@ -41,7 +41,7 @@ With this submission, I included the following files:
 * `model.py`: My final ConvNet architecture, derived from the nVidia architecture [(Ref.1)](#ref1).
 * `import_data.py`: The code used to import data, augment it, pre-process it and build generators to feed batches into the model
 * `drive.py`: The code used to drive the car. It is based on the provided code but I added the possibility to pass different a target speed as well as multipliers to the steering and throttle inputs. I also included data pre-processing into it in line with what is applied to validation sets during the training phase.
-* `modell.h5`: The trained model, passed to `drive.py` to drive the car in autonomous mode.
+* `model.h5`: The trained model, passed to `drive.py` to drive the car in autonomous mode.
 * `video.mp4`: A video recording of the model completing 1 lap of track 1.
 * `video_track2.mp4`: A video recording of the model completing track 2 (mountain).
 * `video_track3_edit.mp4`: A video recording of the model completing 1 lap of track 3 (jungle), slightly edited to indicate when manual braking was applied.

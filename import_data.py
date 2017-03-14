@@ -44,16 +44,21 @@ def random_translate(image, angle, x_pixels, y_pixels, angle_corr):
 
     Returns the single modified image and the corrected angle.
     '''
+    # Random number of pixels to translate horizontally by:
     x_t = int(np.round(np.random.uniform(-x_pixels, x_pixels)))
-
+    # Correction on steering angle, proportional to x_t:
     angle_out = angle + x_t * 5 * angle_corr / image.shape[1]
-
+    # Random number of pixels to translate vertically by:
     y_t = np.random.uniform(-y_pixels, y_pixels)
+
+    # Define translation matrix:
     M = np.array([[1, 0, x_t], [0, 1, y_t]], dtype = np.float32)
+    # Apply translation:
     image_out = cv2.warpAffine(image, M, 
         dsize = (image.shape[1], image.shape[0]))
 
     return image_out, angle_out
+
 
 CROP = (55, 25)
 SIZE = (80, 40)

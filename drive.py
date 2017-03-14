@@ -40,19 +40,19 @@ parser.add_argument("-s", "--speed",
     dest = "TARGET_SPEED", 
     type = float,
     nargs='?',
-    default = 15.,
+    default = 25.,
     help = "Target speed of the car. Defaults to 15mph")
 parser.add_argument("-m", "--steering_multiplier", 
     dest = "STEERING_MULT", 
     type = float, 
     nargs='?',
-    default = 1.25,
+    default = 1.,
     help = "Multiplier for steering inputs. Applied to the model's prediction at each frame. Defaults at 1.25.")
 parser.add_argument("-t", "--throttle_multiplier", 
     dest = "THROTTLE_MULT", 
     type = float,
     nargs='?',
-    default = 0.5, 
+    default = 1., 
     help = "Multiplier for throttle inputs. Defaults to 0.5.")
 
 args = parser.parse_args()

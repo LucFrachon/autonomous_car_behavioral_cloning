@@ -1,10 +1,10 @@
 from import_data import *
-import matplotlib
-matplotlib.use('TkAgg')
+import matplotlib 
+matplotlib.use('TkAgg') 
 import matplotlib.pyplot as plt
 import matplotlib.image as im
 import cv2
-from drive import crop_resize_equalize
+# from drive import crop_resize_equaliz
 
 matplotlib.get_backend()
 
@@ -24,23 +24,23 @@ X, y = import_data(500, 501, log_dir = log_dir, log_filename = "driving_log.csv"
 images = []
 angles = []
 
-# X0_brightness = random_adjust_brightness(X[0])
-# X0_translate, y_translate = random_translate(X0_brightness, y[0], 30, 30, 0.2)
-# X0_crop = crop_resize(X0_translate, CROP, SIZE)
-# # _,_,X_final = append_images_and_angles_train(samples[500],images, angles, log_dir, 
-# #     camera = 0, channels = 3) 
+X0_brightness = random_adjust_brightness(X[0])
+X0_translate, y_translate = random_translate(X0_brightness, y[0], 30, 30, 0.2)
+X0_crop = crop_resize(X0_translate, CROP, SIZE)
+# _,_,X_final = append_images_and_angles_train(samples[500],images, angles, log_dir, 
+#     camera = 0, channels = 3) 
 
-# print(y[0], y_translate)
-# cv2.imshow("original", cv2.cvtColor(X[0], cv2.COLOR_RGB2BGR))
-# cv2.imshow("brightness", cv2.cvtColor(X0_brightness, cv2.COLOR_RGB2BGR))
-# cv2.imshow("translate", cv2.cvtColor(X0_translate, cv2.COLOR_RGB2BGR))
-# cv2.imshow("crop", cv2.cvtColor(X0_crop, cv2.COLOR_RGB2BGR))
-# cv2.waitKey(0)
-
-im = crop_resize_equalize(X[0], CROP, SIZE)
+print(y[0], y_translate)
 cv2.imshow("original", cv2.cvtColor(X[0], cv2.COLOR_RGB2BGR))
-cv2.imshow("result", cv2.cvtColor(im, cv2.COLOR_RGB2BGR))
+cv2.imshow("brightness", cv2.cvtColor(X0_brightness, cv2.COLOR_RGB2BGR))
+cv2.imshow("translate", cv2.cvtColor(X0_translate, cv2.COLOR_RGB2BGR))
+cv2.imshow("crop", cv2.cvtColor(X0_crop, cv2.COLOR_RGB2BGR))
 cv2.waitKey(0)
+
+# im = crop_resize_equalize(X[0], CROP, SIZE)
+# cv2.imshow("original", cv2.cvtColor(X[0], cv2.COLOR_RGB2BGR))
+# cv2.imshow("result", cv2.cvtColor(im, cv2.COLOR_RGB2BGR))
+# cv2.waitKey(0)
 
 # images, angles, image = append_images_and_angles_train(samples[500], images, angles,
 #     log_dir, camera = 2)

@@ -115,7 +115,7 @@ model.summary()
 # Note that the actual batch size is twice the parameter because we use both the 
 # original and the flipped images at each epoch.
 history = model.fit_generator(train_gen, samples_per_epoch = 2 * len(train_samples), 
-	validation_data = valid_gen, nb_val_samples = 2 * len(validation_samples), 
+	validation_data = valid_gen, nb_val_samples = len(validation_samples), 
 	 nb_epoch = nb_epoch, verbose = 1)
 
 model.save('model_final.h5')

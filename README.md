@@ -13,11 +13,11 @@ I collected driving data form three different tracks then used a convolutional n
 
 `network_large.py`: The code implementing the model architecture and training parameters
 
-`import_data.py`: Functions generating image batches for training and validation and apply pre-processing and data augmentation;
+`import_data.py`: Functions and generators producting image batches for training and validation and applying pre-processing and data augmentation;
 
 `model.h5`: The final, trained model
 
-`drive.py`: Code used to drive the car in autonomous mode. Uses some flags to define target speed, steering multiplicative factor and throttle input maultiplicative factor.
+`drive.py`: Code used to drive the car in autonomous mode. Uses some flags to define target speed, steering multiplicative factor and throttle input multiplicative factor.
 
 `video.py`: Code to generate videos from recorded screen shots
 

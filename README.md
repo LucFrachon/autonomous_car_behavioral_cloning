@@ -1,11 +1,11 @@
 
-# Project 3: Use Deep Learning to Clone Driving Behavior
+# Use Deep Learning to Clone Driving Behavior
 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
 Overview
 ---
-This repository contains my implementation of behavioral cloning applied to a self-driving car simulator.
+This repository contains an implementation of behavioral cloning applied to a self-driving car simulator.
 
 I collected driving data form three different tracks then used a convolutional neural network to teach the model to drive.
 
